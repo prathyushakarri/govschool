@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>GovSchool Connect</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',Arial;background:linear-gradient(135deg,#667eea,#764ba2);margin:0;padding:15px;min-height:100vh}
+.top{text-align:center;color:white;margin:10px 0 20px}
+.top h1{font-size:32px;margin:0;text-shadow:0 2px 10px rgba(0,0,0,.3)}
+.top p{opacity:.9;margin:5px}
+.box{max-width:520px;background:white;margin:auto;padding:25px;border-radius:20px;box-shadow:0 15px 35px rgba(0,0,0,.25)}
+h2{color:#333;font-size:18px;margin:0 0 10px}
+label{font-size:13px;font-weight:bold;color:#555}
+input,select,textarea{width:100%;padding:13px;margin:6px 0 12px;border:2px solid #eee;border-radius:12px;font-size:15px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#667eea}
+.btn{width:100%;padding:14px;background:linear-gradient(90deg,#667eea,#764ba2);color:white;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer}
+.card{background:#f7f7ff;padding:14px;border-radius:14px;margin-top:12px;border:1px solid #eee}
+.badge{background:#667eea;color:white;padding:3px 10px;border-radius:20px;font-size:12px}
+.del{background:#ff4757;color:white;border:none;padding:7px 14px;border-radius:8px;margin-top:8px;cursor:pointer}
+.small{color:#888;font-size:12px}
+.empty{text-align:center;color:#999;padding:20px}
+</style>
+</head>
+<body>
+<div class="top">
+<h1>GovSchool Connect</h1>
+<p>Student Complaint Portal - For Government School Students</p>
+</div>
+<div class="box">
+<h2>Complaint Form</h2>
+<label>Your Name</label>
+<input id="name" placeholder="Example: Ravi Kumar">
+<label>Your Class</label>
+<input id="cls" placeholder="Example: 8th Class">
+<label>Problem Type</label>
+<select id="cat">
+<option>Fan Problem</option>
+<option>Water Problem</option>
+<option>Bench / Classroom</option>
+<option>Teacher Problem</option>
+<option>Books / Other</option>
+</select>
+<label>Your Complaint</label>
+<textarea id="msg" rows="3" placeholder="Write your problem clearly here..."></textarea>
+<button class="btn" onclick="send()">Submit Complaint</button>
+<h2 style="margin-top:25px">All Complaints</h2>
+<div id="list"><div class="empty">No complaints yet</div></div>
+</div>
+<script>
+async function load(){
+ let r=await fetch('/complaints'); let d=await r.json();
+ let h='';
+ d.forEach((c,i)=>{
+  h+='<div class="card"><b>'+c.name+' - '+c.cls+'</b><br><span class="badge">'+(c.cat||'')+'</span><br><div style="margin:8px 0">'+c.msg+'</div><span class="small">'+(c.date||'')+'</span><br><button class="del" onclick="del('+i+')">Delete</button></div>'
+ });
+ document.getElementById('list').innerHTML=h||'<div class="empty">No complaints yet</div>';
+}
+async function send(){
+ let name=document.getElementById('name').value;
+ let cls=document.getElementById('cls').value;
+ let cat=document.getElementById('cat').value;
+ let msg=document.getElementById('msg').value;
+ if(!name||!msg){alert('Please enter Name and Complaint');return;}
+ await fetch('/complaint',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,cls,cat,msg})});
+ document.getElementById('msg').value='';
+ load();
+}
+async function del(i){
+ if(!confirm('Do you want to delete?'))return;
+ await fetch('/complaint/'+i,{method:'DELETE'});
+ load();
+}
+load();
+</script>
+</body>
+</html>
